@@ -1,0 +1,7 @@
+.inactiveOperation {
+    opacity: 0.4;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
