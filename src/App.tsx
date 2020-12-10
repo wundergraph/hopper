@@ -3,6 +3,7 @@ import 'monaco-graphql/esm/monaco.contribution';
 import {HeadlessConfiguration} from "./lib/controller";
 import {useController} from "./lib/controller/react-hooks";
 import './lib/controller/hopper.css';
+import './App.css';
 
 /* eslint import/no-webpack-loader-syntax: off */
 
