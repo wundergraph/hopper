@@ -6,7 +6,7 @@ import reportWebVitals from './reportWebVitals';
 
 ReactDOM.render(
   <React.StrictMode>
-    <App hideHeader />
+    <App hideHeader={false} />
   </React.StrictMode>,
   document.getElementById('root')
 );

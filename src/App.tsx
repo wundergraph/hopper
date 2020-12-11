@@ -99,6 +99,9 @@ const App: React.FC<AppProps> = (props) => {
             { !props.hideHeader &&
                 <div className="flex justify-between px-2">
                     <div className="m-2 text-white text-3xl">WunderGraph <span className="font-bold">Hopper</span></div>
+                    <div className="m-2 text-white text-3xl">
+                        <a target="_blank" href="https://github.com/wundergraph/hopper">https://github.com/wundergraph/hopper</a>
+                    </div>
                 </div>
             }
             <div className="flex flex-grow items-stretch overflow-hidden">
