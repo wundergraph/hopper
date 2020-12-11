@@ -31,7 +31,7 @@ We support GraphQL, GraphQL Federation, GraphQL Schema Stitching & REST as upstr
 
 We're planning to support SOAP, ODATA & gRPC as upstreams.
 
-Our hyperfast GraphQL Engine uses Compiled Queries. Early tests suggest that we're ~30-150x faster than the Apollo Federation Gateway. Our Engine supports @defer & @stream for an optimal user experience.
+Our hyperfast GraphQL Engine uses Compiled Queries. Early tests suggest that we're ~30-150x faster than the Apollo Federation Gateway. Our Engine supports @defer, @stream and Subscriptions for an optimal user experience.
 
 But performance is not everything. Compiling Queries in production also eliminates a lot of threats like traversal attacks or DOS by using complex Queries, making your GraphQL journey even more secure.
 
