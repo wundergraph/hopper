@@ -35,11 +35,19 @@ export const useController = (config: HeadlessConfiguration) => {
         controller?.updateUpstream(newUpstreamURL);
     }, [controller])
 
+    const runActiveOperation = useCallback(() => {
+        if (controller === undefined){
+            return
+        }
+        (async () => await controller.runCurrentOperation())();
+    },[controller]);
+
     return {
         state,
         updateUpstream,
         operationsDiv,
         variablesDiv,
-        resultsDiv
+        resultsDiv,
+        runActiveOperation
     }
 }

@@ -21,7 +21,7 @@ import {
 } from "graphql";
 import {VariablesJSONSchema} from "../json-schema";
 import {JSONSchema7 as JSONSchema} from "json-schema";
-import { debounce } from "../utils/debounce";
+import {debounce} from "../utils/debounce";
 
 const defaultValues = {
     style: {
@@ -75,7 +75,11 @@ export const initialState: State = {
         lineNumber: 0,
         column: 0,
     },
-    upstreamURL: ""
+    upstreamURL: "",
+    result: {
+        raw: "",
+        json: {},
+    }
 }
 
 export interface Position {
@@ -100,6 +104,10 @@ export interface State {
         raw: string
         doc: DocumentNode,
         graphQLSchema: GraphQLSchema
+    },
+    result: {
+        raw: string
+        json: any
     }
 }
 
@@ -194,7 +202,6 @@ export class Controller {
                 return;
             }
             that.currentState.operations[i].variableValue = value
-            console.log('saved model', that.currentState.operations[i]);
         })
 
         const parsed = await this.parseOperations();
@@ -295,6 +302,10 @@ export class Controller {
         }
     }
 
+    public runCurrentOperation = async () => {
+        await this.executeCurrentOperation();
+    }
+
     public updateUpstream = (upstream: string) => {
         if (this.config.schema.SchemaURI === upstream) {
             return
@@ -365,7 +376,7 @@ export class Controller {
         if (this.currentState.activeOperationIndex === undefined) {
             return
         }
-        if (this.currentState.operations.length -1 >= this.currentState.activeOperationIndex + 1) {
+        if (this.currentState.operations.length - 1 >= this.currentState.activeOperationIndex + 1) {
             this.jumpToOperation(this.currentState.activeOperationIndex + 1)
         } else {
             this.jumpToOperation(0)
@@ -401,7 +412,6 @@ export class Controller {
     }
     private extractVariable = async () => {
         const position = this.operationsEditor.getPosition();
-        console.log("extractVariable", position, this.currentState);
         if (this.currentState.operationsDocument === undefined || this.currentState.activeOperationIndex === undefined) {
             return
         }
@@ -430,7 +440,6 @@ export class Controller {
                     if (node.variableDefinitions?.find(v => v.variable.name.value === variableName)?.variable !== undefined) {
                         return
                     }
-                    console.log("leave", variableName, inputType)
                     const out: OperationDefinitionNode = {
                         ...node,
                         variableDefinitions: [
@@ -454,11 +463,9 @@ export class Controller {
             },
             Argument: {
                 enter: node => {
-                    console.log("arg2", print(node), node.loc, position);
                     if (position?.lineNumber !== node.loc?.startToken.line) {
                         return
                     }
-                    console.log("MATCH", node.value);
                     if (node.value.kind === "Variable") {
                         const variable = node.value as VariableNode;
                         variableName = variable.name.value;
@@ -472,7 +479,6 @@ export class Controller {
             return;
         }
         const nextContent = print(updated);
-        console.log("updated", nextContent);
         const nextParsed = parse(nextContent);
         let replacement = "";
         visit(nextParsed, {
@@ -542,6 +548,8 @@ export class Controller {
         const operation = this.currentState.operations[this.currentState.activeOperationIndex];
         this.setState(prev => ({...prev, loading: true}));
         this.applyResultsDecorations(true);
+        let rawResult = "";
+        let jsonResult = {};
         try {
             const variables = this.variablesEditor.getValue();
             const body: { variables?: string; query: string, operationName: string } = {
@@ -557,12 +565,22 @@ export class Controller {
                 headers: {'content-type': 'application/json'},
                 body: JSON.stringify(body),
             });
-            const resultText = await result.text();
-            this.resultsEditor.setValue(JSON.stringify(JSON.parse(resultText), null, 2));
+            const resultString = await result.text();
+            jsonResult = JSON.parse(resultString)
+            rawResult = JSON.stringify(jsonResult, null, 2)
+            this.resultsEditor.setValue(rawResult);
         } catch (err) {
-            this.resultsEditor.setValue(err.toString());
+            rawResult = err.toString();
+            this.resultsEditor.setValue(rawResult);
         }
-        this.setState(prev => ({...prev, loading: false}));
+        this.setState(prev => ({
+            ...prev,
+            loading: false,
+            result: {
+                raw: rawResult,
+                json: jsonResult,
+            }
+        }));
         this.applyResultsDecorations(false);
     }
     private parseOperations = async (): Promise<ParsedOperation | undefined> => {
@@ -579,11 +597,6 @@ export class Controller {
             let name = "";
             let variableValue = "";
             visit(document, {
-                VariableDefinition: {
-                    enter: node => {
-                        console.log("variable", print(node));
-                    },
-                },
                 OperationDefinition: {
                     enter: node => {
                         start = node.loc?.startToken.line || 0;
@@ -610,7 +623,6 @@ export class Controller {
             console.log(e);
             return
         }
-        console.log("parsed", document, operations);
         return {
             document,
             operations,
