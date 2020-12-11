@@ -12,6 +12,7 @@
     "@types/react": "^16.9.53",
     "@types/react-dom": "^16.9.8",
     "autoprefixer": "^9",
+    "copy-text-to-clipboard": "^2.2.0",
     "graphql": "^15.4.0",
     "json-schema": "^0.2.5",
     "monaco-graphql": "^0.3.1",
